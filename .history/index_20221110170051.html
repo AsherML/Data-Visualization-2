@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://d3js.org/topojson.v3.min.js"></script>
+    </head>
+    <body>
+        <svg height="600" width="900"></svg>
+        <script>
+            const getData=async function(){
+                const mapData=await d3.json("countyTest.json");
+                console.log(mapData);
+                let countyName=topojson.features(mapData, mapData.objects.cb_2015_us_countygeometries.properties.NAME);
+                console.log(countyName);
+            }
+            getData();
+
+        </script>
+    </body>
+</html>

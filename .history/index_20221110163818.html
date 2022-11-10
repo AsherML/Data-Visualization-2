@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://d3js.org/topojson.v3.min.js"></script>
+    </head>
+    <body>
+        <svg height="600" width="900"></svg>
+        <script>
+            const getData=async function(){
+                const mapData=d3.json("countyTest.json");
+                console.log(mapData);
+            }
+            getData
+
+        </script>
+    </body>
+</html>
