@@ -112,7 +112,6 @@
                 let newTransform = d3.zoomIdentity
                             .translate(translate[0],translate[1])
                             .scale(scale);
-                map.transition().duration(1000).call(zoom.transform, newTransform);
             }
 
             function mapZoom({transform}){

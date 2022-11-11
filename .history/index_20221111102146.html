@@ -108,11 +108,7 @@
                 let y = (bounds[0][1] + bounds[1][1]) / 2; // center y of state/county
                 let scale = Math.max(1, Math.min(10, 0.9 / Math.max( dx / mapWidth, 
                                                            dy / mapHeight )));
-                let translate = [mapWidth / 2 - x * scale, mapHeight / 2 - y * scale];
-                let newTransform = d3.zoomIdentity
-                            .translate(translate[0],translate[1])
-                            .scale(scale);
-                map.transition().duration(1000).call(zoom.transform, newTransform);
+                let let translate = [mapWidth / 2 - x * scale, mapHeight / 2 - y * scale];
             }
 
             function mapZoom({transform}){

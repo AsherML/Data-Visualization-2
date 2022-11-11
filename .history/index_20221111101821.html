@@ -98,22 +98,7 @@
             map.call(zoom);
 
             viewport.selectAll(".state").on("click", clicked)
-            viewport.selectAll(".county").on("click", clicked)
-
-            function clicked(event, d){
-                let tempPath=statePath.bounds(d.geometry)
-                let dx = bounds[1][0] - bounds[0][0]; // width of state/county
-                let dy = bounds[1][1] - bounds[0][1]; // height of state/county
-                let x = (bounds[0][0] + bounds[1][0]) / 2; // center x of state/county
-                let y = (bounds[0][1] + bounds[1][1]) / 2; // center y of state/county
-                let scale = Math.max(1, Math.min(10, 0.9 / Math.max( dx / mapWidth, 
-                                                           dy / mapHeight )));
-                let translate = [mapWidth / 2 - x * scale, mapHeight / 2 - y * scale];
-                let newTransform = d3.zoomIdentity
-                            .translate(translate[0],translate[1])
-                            .scale(scale);
-                map.transition().duration(1000).call(zoom.transform, newTransform);
-            }
+            viewport.selectAll(",county")
 
             function mapZoom({transform}){
                 viewport.attr("transform", transform.toString());
