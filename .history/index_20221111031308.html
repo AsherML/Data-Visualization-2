@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://d3js.org/topojson.v3.min.js"></script>
+    </head>
+    <body>
+        <svg height="600" width="900" id="map"></svg>
+        <script>
+            let map=d3.select("#map");
+            let width=map.attr("width");
+            let height=map.attr("height");
+            let viewport=map.append("g").attr("id", "viewport")
+
+            const getData=async function(){
+                const countyMapData=await d3.json("countyTest.json");
+                const stateMapData=await d3.json("states.json");
+                const devData=await(d3.csv("countyDevCounts.csv"));
+                console.log(countyMapData);
+                console.log(stateMapData);
+                console.log(devData);
+
+                
+
+                
+
+                let counties=topojson.feature(countyMapData, countyMapData.objects.collection);
+                let countyMesh=topojson.mesh(countyMapData, countyMapData.objects.collection);
+                let states=topojson.feature(stateMapData, stateMapData.objects.us);
+                let statesMesh=topojson.mesh(stateMapData, stateMapData.objects.us);
+                let countyProjection=d3.geoAlbers().fitSize([width, height], counties);
+                let countyPath=d3.geoPath().projection(countyProjection);
+                let stateProjection=d3.geoAlbers().fitSize([width,height], states);
+                let statePath=d3.geoPath().projection(stateProjection);
+
+                // let colorScale=d3.scaleQuantile()
+                //     .domain(d3.extent(devData['numDevelopers']))
+                //     .range(["#acc886", "#699c76", "#105a55", "#1d3b57", "#0f0b3e"])
+
+                
+           
+                //let countyName=topojson.feature(mapData, mapData.objects.cb_2015_us_county_20m.geometries.properties);
+                //console.log(mapData.objects.cb_2015_us_county_20m.geometries[0].properties.NAME);
+                let drawCountyMesh=viewport.append("path")
+                    .datum(countyMesh)
+                    .attr("d", countyPath)
+                    .attr("class", "countyMesh")
+                    .style("stroke", "gray")
+                    .style("fill", d=>
+                        colorScale(devData.find(entry=>entry.county==d['county']))
+                    );
+            
+                let drawStateMesh=viewport.append("path")
+                    .datum(statesMesh)
+                    .attr("d",statePath)
+                    .style("stroke", "red")
+                    .style("fill","none");
+
+
+            }
+            getData();
+
+        </script>
+    </body>
+</html>

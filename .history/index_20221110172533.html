@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://d3js.org/topojson.v3.min.js"></script>
+    </head>
+    <body>
+        <svg height="600" width="900" id="map"></svg>
+        <script>
+            let map=d3.select("#map");
+            let width=map.attr("width");
+            let height=map.attr("height");
+
+            const getData=async function(){
+                const mapData=await d3.json("countyTest.json");
+                console.log(mapData);
+                let counties=topojson.feature(mapData, mapData.objects.cb_2015_us_county_20m);
+                let countyMesh=topojson.mesh(mapData, mapData.objects.cb_2015_us_county_20m);
+                let projection=d3.geoMercator().fitSize([width, height], topojson.feature())
+                console.log(counties);
+                //let countyName=topojson.feature(mapData, mapData.objects.cb_2015_us_county_20m.geometries.properties);
+                //console.log(mapData.objects.cb_2015_us_county_20m.geometries[0].properties.NAME);
+            }
+            getData();
+
+        </script>
+    </body>
+</html>
