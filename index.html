@@ -12,7 +12,8 @@
 </head>
 
 <body>
-    <p>Visualization 1: Insert Descrption + Data sources</p>
+    <h1>Visiualization 1: Insert title.</h1>
+    <p>Insert data description</p>
     <svg height="600" width="900" id="map"></svg>
     <script>
         let map = d3.select("#map");
@@ -139,17 +140,38 @@
 
     </script>
 
-    <p>Visiualization 2: Insert Descrption + Data sources</p>
+
+    <h1>Visiualization 2: Insert title.</h1>
+    <p>Insert data description</p>
     <svg id="vis-2"></svg>
     <script></script>
 
-    <p>Visiualization 3: Insert Descrption + Data sources</p>
-    <svg id="vis-3"></svg>
-    <script></script>
 
-    <p>Visiualization 4: Insert Descrption + Data sources</p>
-    <svg id="vis-4"></svg>
-    <script></script>
+    <h1>Visiualization 3: Average Software Engineer Salaries by location, company, and level.</h1>
+    <p>The data used in this visualization was sourced from Levels.fyi's comprehensive salary database.</p>
+    <svg id="vis-3" height="600" width="1200" style="background-color: black"></svg>
+    <script>
+        const svg3 = d3.select("#vis-3");
+        const svg3Width = svg3.width;
+        const svg3Height = svg3.height;
+        const margin = { top: 10, bottom: 30, left: 60, right: 10 }
+        const chartWidth = svg3Width - margin.left - margin.right;
+        const chartHeight = svg3Width - margin.top - margin.bottom;
+        let annotations = svg3.append("g").attr("id", "annotations");
+        let chartArea = svg3.append("g").attr("id", "points")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        const loadData = async function () {
+            const levelsData = await d3.csv("levels.csv");
+            console.log(levelsData);
+
+        }
+
+        loadData();
+
+
+
+    </script>
 </body>
 
 </html>
