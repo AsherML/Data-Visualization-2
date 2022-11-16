@@ -43,9 +43,9 @@
             const countyMapData = await d3.json("countyTest.json");
             const stateMapData = await d3.json("states.json");
             const devData = await (d3.csv("countyDevCounts.csv"));
-            console.log(countyMapData);
-            console.log(stateMapData);
-            console.log(devData);
+            // console.log(countyMapData);
+            // console.log(stateMapData);
+            // console.log(devData);
 
             let counties = topojson.feature(countyMapData, countyMapData.objects.collection);
             let countyMesh = topojson.mesh(countyMapData, countyMapData.objects.collection);
@@ -179,35 +179,134 @@
 
     <h1>Visiualization 2: Insert title.</h1>
     <p>Insert data description</p>
-    <svg id="vis-2"></svg>
-    <script></script>
-
-
-    <h1>Visiualization 3: Average Software Engineer Salaries by location, company, and level.</h1>
-    <p>The data used in this visualization was sourced from Levels.fyi's comprehensive salary database.</p>
-    <svg id="vis-3" height="600" width="1200" style="background-color: black"></svg>
+    <div id="buttonBar" style="width:100%; margin-left:30%; margin-right: 45%;"></div>
+    <svg id="vis2" height="600" width="1200" style="margin-left: 10%; margin-right:10%;"></svg>
     <script>
-        const svg3 = d3.select("#vis-3");
-        const svg3Width = svg3.width;
-        const svg3Height = svg3.height;
-        const margin = { top: 10, bottom: 30, left: 60, right: 10 }
-        const chartWidth = svg3Width - margin.left - margin.right;
-        const chartHeight = svg3Width - margin.top - margin.bottom;
-        let annotations = svg3.append("g").attr("id", "annotations");
-        let chartArea = svg3.append("g").attr("id", "points")
-            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+        const svg2 = d3.select("#vis2");
+        const svg2Width = svg2.attr("width");
+        const svg2Height = svg2.attr("height");
+        const margin = { top: 25, bottom: 150, left: 60, right: 10 }
+        const chartWidth = svg2Width - margin.left - margin.right;
+        const chartHeight = svg2Height - margin.top - margin.bottom;
+        let annotations = svg2.append("g").attr("id", "annotations");
+        let chartArea = svg2.append("g").attr("id", "points")
+            .attr("transform", `translate(${margin.left}, ${margin.bottom + margin.top})`);
 
-        const loadData = async function () {
-            const levelsData = await d3.csv("levels.csv");
-            console.log(levelsData);
+        let bottomAxis = d3.axisBottom();
+        let bottomAxisG = annotations.append("g")
+                             .attr("class", "x axis")
+                             .attr("transform",`translate(${margin.left},${chartHeight + margin.top})`);
+        
+        
+        const tempScale = d3.scaleLinear().domain([75,2000]).range([chartHeight, 0]);
+        let leftAxis = d3.axisLeft(tempScale).tickSize(25);
+        annotations.append("g")
+             .attr("class", "y axis")
+             .attr("transform",`translate(${margin.left-5},${margin.top})`)
+             .call(leftAxis)
 
+        let current_button = "";
+
+        const loadGraph = async function (button) {
+            if (current_button != button){
+            current_button = button;
+
+            let data = await d3.csv("levels.csv", d3.autoType);
+            data.forEach(d => {
+                d.company = d.company.toLowerCase().split(" ")[0];
+            });
+            data = data.filter( d => d['totalyearlycompensation'] > 75 && d['totalyearlycompensation'] < 2000 
+                                  && d['yearsofexperience'] > 1); 
+
+
+            const extent = d3.extent(data, d => d.yearsofexperience);
+            let scale = d3.scaleLinear().domain(extent).range([0,chartWidth]); 
+            let width = chartWidth/extent;
+
+
+            if (button === "company"){
+                const companies = [...(new Set(data.map((d) => d.company)))].slice(0,25);
+                data = data.filter( d => companies.includes(d['company'])); 
+                scale = d3.scaleBand().domain(companies).range([0,chartWidth])
+                                       .padding(0.09);
+                width = scale.bandwidth();
+            }
+            else if (button === "location"){
+                const location = [...(new Set(data.map((d) => d.location)))].slice(0,25);
+                data = data.filter( d => location.includes(d['location'])); 
+                scale = d3.scaleBand().domain(location).range([0,chartWidth])
+                                       .padding(0.09);
+                width = scale.bandwidth();
+            }
+
+            const salaryExtent =d3.extent(data, d => d['totalyearlycompensation']);
+            const salaryScale = d3.scaleLinear().domain(salaryExtent).range([chartHeight,0]);
+            
+
+            bottomAxis.scale(scale);
+            bottomAxisG.transition().call(bottomAxis);
+
+            if (button === "location" || button === "company"){
+                d3.select('g.x.axis').selectAll("text").style('text-anchor','start').attr("transform", "rotate (45 -10 10)");
+            }
+            
+            chartArea.selectAll('rect.bar').data(data, d => d[button])
+                    .join (
+                    enter => enter.append('rect')
+                         .attr('class','bar')
+                         .attr('x', d => (scale(d[button])))
+                         .attr('y', d => salaryScale(d.totalyearlycompensation) - margin.bottom - margin.top)
+                         .attr('fill', 'green')
+                         .attr('height', d => salaryScale(0) - (salaryScale(d.totalyearlycompensation)))
+                         .attr('width', width)
+                         .attr("opacity", 0)
+                         .call(enter => enter.transition().attr('opacity', 1))),
+
+                    update => update.call(update => update.transition()
+                                                .attr('x', d => (scale(d[button])))
+                                                .attr('y', d => salaryScale(d.totalyearlycompensation)-margin.bottom + margin.top)
+                                                .attr('fill', 'blue')
+                                                .attr('height', d => salaryScale(0) - (salaryScale(d.totalyearlycompensation)))
+                                                .attr('width', width),
+
+                    exit => exit.call(exit => exit.transition().attr('opacity',0).remove()));
+        
+            }
         }
 
-        loadData();
+        //add buttons for switching between views:
+        d3.select("#buttonBar")
+                .append("button")
+                .text ("Company")
+                .style("margin", "1%")
+                .on("click", function () {
+                    loadGraph("company");
+                });
+        d3.select("#buttonBar")
+                .append("button")
+                .text ("Years of Experience")
+                .style("margin", "2%")
+                .on("click", function () {
+                    loadGraph("yearsofexperience");
+                });
+        d3.select("#buttonBar")
+                .append("button")
+                .text ("Location")
+                .style("margin", "1%")
+                .on("click", function () {
+                    loadGraph("location");
+                });
+
+        loadGraph("company");
 
 
 
     </script>
+
+
+    <h1>Visiualization 3: Average Software Engineer Salaries by location, company, and level.</h1>
+    <p>The data used in this visualization was sourced from Levels.fyi's comprehensive salary database.</p>
+
 </body>
 
 </html>
