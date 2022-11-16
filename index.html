@@ -8,18 +8,36 @@
         .hide {
             display: none;
         }
+
+        .tooltip {
+            display: none;
+            background-color: rgb(90, 88, 88);
+            position: absolute;
+            border-radius: 8px;
+            padding: 10px;
+            padding-bottom: 15px;
+            width: 250px;
+            height: 50px;
+            color: white
+        }
     </style>
 </head>
 
 <body>
     <h1>Visiualization 1: Insert title.</h1>
-    <p>Insert data description</p>
-    <svg height="600" width="900" id="map"></svg>
+    <p>This is a map depicting the number of Software Developers in the United States. At its zoomed out state,
+        the map is color coded by the number of developers per state. Once you zoom in, the map is color coded by
+        city. You can hover over individual cities to see the actual number of developers in each city.
+    </p>
+    <svg height="600" width="900" id="map">
+    </svg>
     <script>
         let map = d3.select("#map");
         let width = map.attr("width");
         let height = map.attr("height");
         let viewport = map.append("g").attr("id", "viewport")
+        var tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip");
 
         const getData = async function () {
             const countyMapData = await d3.json("countyTest.json");
@@ -79,6 +97,19 @@
                         : countyColorScale(devData.find(entry => entry.county == d.properties.name)['numDevelopers']))
                 .style("stroke", "none")
                 .style("display", "none")
+                .on("mouseover", function (d) {
+                    var data = d3.select(this).datum()
+                    var count = (devData.find(entry => entry.county == data.properties.name) === undefined)
+                        ? "Unknown"
+                        : devData.find(entry => entry.county == data.properties.name)['numDevelopers']
+                    var text = 'Number of Developers: ' + count
+                    tooltip
+                        .style('left', event.pageX + 10 + 'px')
+                        .style('top', event.pageY + 10 + 'px')
+                        .style('display', 'block')
+                        .html(`<p>${text}</p>`)
+                })
+                .on('mouseout', () => tooltip.style('display', 'none'));
 
             let drawStateFill = viewport.selectAll("path.state").data(states.features)
                 .join("path")
@@ -95,6 +126,11 @@
                 .scaleExtent([1, 10])
                 .on("zoom", mapZoom)
             map.call(zoom);
+
+            // var tooltip = viewport.append("div")
+            //     .attr("class", "tooltip");
+
+
 
             viewport.selectAll(".state").on("click", clicked)
             viewport.selectAll(".county").on("click", clicked)
